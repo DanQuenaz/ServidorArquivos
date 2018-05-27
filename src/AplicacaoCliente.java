@@ -33,11 +33,19 @@ public class AplicacaoCliente {
     }
 
     public void enviaMensagem(Object msg){
-        this.streamSaida.writeObject(msg);
+        try{
+            this.streamSaida.writeObject(msg);
+        }catch(Exception e){
+
+        }
     }
 
     public Object recebeMensagem(){
-        return this.streamEntrada.readObject();
+        try{
+            return this.streamEntrada.readObject();
+        }catch(Exception e){
+            return null;
+        }
     }
     
     public String getNick() {
@@ -56,43 +64,49 @@ public class AplicacaoCliente {
 
         String msg = "", nick = "";
         boolean fim = false;
-
-        Vector<File> files;
-        Vector<String> nameFiles;
+        int prot[] = new int[2];
+        int op;
+        Vector<File> files = new Vector<File>();
+        Vector<String> nameFiles = new Vector<String>();
         
         InputStreamReader streamTeclado = new InputStreamReader(System.in);
-        BufferedReader teclado = new BufferedReader(streamTeclado);
+        BufferedReader teclado0 = new BufferedReader(streamTeclado);
+
+        Scanner teclado = new Scanner(System.in); 
 
         System.out.println("Digite seu nickname: ");
-        nick = teclado.readLine();
+        nick = teclado0.readLine();
             
-        AplicacaoCliente cliente = new AplicacaoCliente("172.16.103.90", 12345, nick);
+        AplicacaoCliente cliente = new AplicacaoCliente("192.168.2.15", 12345, nick);
         System.out.println(nick + " se conectou ao servidor!");
-        
-        
         
         do {
             System.out.println("1 - Listar arquivos disponíveis/n2 - Listar arquivos locais/nFIM - Finalizar");
-            msg = teclado.readLine();
-            if(msg == "1"){
+            op = teclado.nextInt();
+            if(op == 1){
                 int k = 0;
-                cliente.enviaMensagem("100")
+                prot[0] = op;
+                prot[1] = 0;
+                cliente.enviaMensagem(prot);
                 nameFiles = (Vector<String>) cliente.recebeMensagem();
                 for(String index : nameFiles){
                     System.out.println(k + " - " + index);
                 }
-                System.out.println("Escolha um arquivo ou digite c para voltar: ");
-                msg = teclado.readLine();
-                if(msg != "c"){
-                    cliente.enviaMensagem("2"+msg+"0")
+                System.out.println("Escolha um arquivo ou digite 0 para voltar: ");
+                op = teclado.nextInt();
+                if(op != 0){
+                    prot[0] = 2;
+                    prot[1] = op;
+                    cliente.enviaMensagem(prot);
+                    files.add( (File) cliente.recebeMensagem() );
                 }
 
-            }else if(msg == "2"){
+            }else if(op == 2){
 
-            }else if (msg.equals("fim") || msg.equals("FIM")){
+            }else if (op == 0){
                 fim = true;    
-            }else             
-                cliente.enviaMensagem(msg, nick);
+            }else{}             
+                //cliente.enviaMensagem(msg, nick);
         } while (!fim);
                 
         cliente.finaliza();

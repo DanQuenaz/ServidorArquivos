@@ -73,6 +73,11 @@ public class AplicacaoServidor extends Thread{
     public void enviaArquivo(File file, String ip) throws IOException{
         this.clientes.get(ip).saida().writeObject(file);
     }
+
+    public void enviaNomes(File file, String ip) throws IOException{
+        Vector<String> nomes = new Vector<String>;
+        this.clientes.get(ip).saida().writeObject(file);
+    }
     
     public int getPorta() {
         return porta;
@@ -125,12 +130,14 @@ class Cliente extends Thread {
     private ObjectInputStream streamEntrada;
     private ObjectOutputStream streamSaida;
     private Vector<File> files;
+    private int prot[];
 
     
     public Cliente(Socket sock, AplicacaoServidor server, Vector<File> files) throws IOException  {
         this.sock = sock;
         this.server = server;
         this.files = files;
+        this.prot = new int[2];
         fim = false;
         streamSaida = new ObjectOutputStream(sock.getOutputStream());
         streamEntrada = new ObjectInputStream(sock.getInputStream());
@@ -156,10 +163,15 @@ class Cliente extends Thread {
             Mensagem msg;
             while (!fim) { 
             
-                msg = (Mensagem) streamEntrada.readObject();
-                System.out.println("Preparando...");
-                server.enviaArquivo(this.files.get(0), this.sock.getInetAddress().getHostAddress());
-                System.out.println("Mensagem enviada para todos!");
+                this.prot = (int[]) streamEntrada.readObject();
+                if(prot[0] == 1){
+                    
+                }else if(prot[0] == 2){
+                    System.out.println("Preparando...");
+                    server.enviaArquivo(this.files.get(prot[1]), this.sock.getInetAddress().getHostAddress());
+                    System.out.println("Mensagem enviada para alguem!");
+                }   
+                
             } 
             streamEntrada.close();
         } catch (Exception e) {
