@@ -44,6 +44,11 @@ public class AplicacaoServidor extends Thread{
         }
     }
 
+    public void deletaCliente(String client){
+        this.clientes.remove(client);
+        this.socks.remove(client);
+    }
+
     public void run() {
         try{
             esperaConexoes();
@@ -59,7 +64,7 @@ public class AplicacaoServidor extends Thread{
         for(String aux : this.socks.keySet()){
             this.socks.get(aux).close();
         }
-
+        this.stop();
         servidor.close();
     }
     
@@ -142,7 +147,7 @@ public class AplicacaoServidor extends Thread{
         }
         
         boolean fim = false;
-        AplicacaoServidor server = new AplicacaoServidor(12345);
+        AplicacaoServidor server = new AplicacaoServidor(12975);
 
         System.out.println("Porta 12345 aberta!");
         
@@ -187,6 +192,7 @@ class Cliente extends Thread {
     
     public void finaliza() {
         fim = true;
+        this.stop();
     }
     
     
@@ -218,13 +224,16 @@ class Cliente extends Thread {
                     System.out.println("Preparando...");
                     server.enviaClientes(this.sock.getInetAddress().getHostAddress());
                     System.out.println("Mensagem enviada para: "+ this.sock.getInetAddress().getHostAddress());
-                }  
+                }else if(msg.getOprc() == -1){
+                    this.server.deletaCliente((String)msg.getData());
+                    System.out.println("Cliente " +(String)msg.getData() +" desconectou.");
+                    this.stop();
+                }
                 
             } 
             streamEntrada.close();
         } catch (Exception e) {
-                System.err.println("Erro: " + e.getMessage());
-            
+            System.err.println("Erro: " + e.getMessage());
         }
     }
 }

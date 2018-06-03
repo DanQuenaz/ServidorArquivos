@@ -16,17 +16,9 @@ public class AplicacaoCliente {
         streamEntrada = new ObjectInputStream(servidor.getInputStream());
     }
 
-    // public void enviaMensagem(Mensagem msg) throws IOException {
-    //     streamSaida.writeObject(msg);
-    // }
-    
-    // public void enviaMensagem(String msg) throws IOException {
-    //     streamSaida.writeObject(new Mensagem(msg, nick));
-    // }
-    
-    // public void enviaMensagem(String msg, String destinatario) throws IOException {
-    //     streamSaida.writeObject(new Mensagem(msg, nick, destinatario));
-    // }
+    public String getIP(){
+        return this.servidor.getInetAddress().getHostAddress();
+    }
 
     public void enviaMensagem(Object msg) throws IOException{
         this.streamSaida.writeObject(msg);
@@ -114,15 +106,17 @@ public class AplicacaoCliente {
         System.out.println("Digite seu nickname: ");
         nick = teclado0.readLine();
             
-        AplicacaoCliente cliente = new AplicacaoCliente("25.79.218.143", 12345, nick);
+        AplicacaoCliente cliente = new AplicacaoCliente("25.79.218.143", 12975, nick);
         System.out.println(nick + " se conectou ao servidor!");
         
         do {
             cliente.clearScreen();
+            System.out.println("SERVIDOR DE ARQUIVOS\n\n");
             System.out.println("1 - Listar arquivos disponíveis\n2 - Listar arquivos locais\n3 - Listar clientes conectados\n0 - Finalizar");
             op = teclado.nextInt();
             if(op == 1){
                 cliente.clearScreen();
+                System.out.println("ARQUIVOS DO SERVIDOR\n");
                 int k = 1;
                 idFiles = new HashMap<Integer, String>();
                 msg = new Mensagem(1, 0);
@@ -170,12 +164,12 @@ public class AplicacaoCliente {
                 System.out.print("\n\nPressione enter para voltar:"); teclado0.readLine();
 
             }else if (op == 0){
+                msg = new Mensagem(-1, 0, cliente.getIP());
+                cliente.enviaMensagem(msg);
                 fim = true;    
-            }else{}             
-                //cliente.enviaMensagem(msg, nick);
+            }else{}
         } while (!fim);
                 
         cliente.finaliza();
     }
-    
 }
