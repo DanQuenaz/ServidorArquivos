@@ -16,7 +16,7 @@ public class AplicacaoServidor extends Thread{
 
     public AplicacaoServidor(int porta) throws IOException {
         this.porta = porta;
-        servidor = new ServerSocket(porta); 
+        servidor = new ServerSocket(porta, 5, null); 
         this.socks = new HashMap<String, Socket>();
         this.clientes = new HashMap<String, Cliente>();
         this.files = new HashMap<String, File>();
@@ -136,6 +136,11 @@ public class AplicacaoServidor extends Thread{
     }
 
     public static void main(String[] args) throws IOException {
+        File serverFolder = new File("../serverFiles/");
+        if(!serverFolder.isDirectory()){
+            serverFolder.mkdirs();
+        }
+        
         boolean fim = false;
         AplicacaoServidor server = new AplicacaoServidor(12345);
 

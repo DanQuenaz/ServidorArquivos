@@ -114,7 +114,7 @@ public class AplicacaoCliente {
         System.out.println("Digite seu nickname: ");
         nick = teclado0.readLine();
             
-        AplicacaoCliente cliente = new AplicacaoCliente("192.168.1.9", 12345, nick);
+        AplicacaoCliente cliente = new AplicacaoCliente("25.79.218.143", 12345, nick);
         System.out.println(nick + " se conectou ao servidor!");
         
         do {
