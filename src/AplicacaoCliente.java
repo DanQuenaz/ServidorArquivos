@@ -105,6 +105,12 @@ public class AplicacaoCliente {
 
         Scanner teclado = new Scanner(System.in); 
 
+        File receiveFolder = new File("../received/");
+
+        if(!receiveFolder.isDirectory()){
+            receiveFolder.mkdirs();
+        }
+
         System.out.println("Digite seu nickname: ");
         nick = teclado0.readLine();
             
@@ -162,7 +168,7 @@ public class AplicacaoCliente {
                 }
 
                 System.out.print("\n\nPressione enter para voltar:"); teclado0.readLine();
-                
+
             }else if (op == 0){
                 fim = true;    
             }else{}             
