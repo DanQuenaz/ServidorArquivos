@@ -133,12 +133,11 @@ public class AplicacaoCliente {
                     idFiles.put(k, index);
                     k = k+1;
                 }
-                System.out.print("\n\nEscolha um arquivo ou digite 0 para voltar: ");
+                System.out.println("Escolha um arquivo ou digite 0 para voltar: ");
                 op = teclado.nextInt();
                 if(op != 0){
                     msg = new Mensagem(2, idFiles.get(op));
                     cliente.enviaMensagem(msg);
-                    cliente.clearScreen();
                     System.out.println("Baixando arquivo...");
                     msg = (Mensagem) cliente.recebeMensagem();
                     cliente.gravaArquivo((byte[])msg.getData(), msg.getName());
