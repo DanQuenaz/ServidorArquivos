@@ -13,6 +13,13 @@ public class Mensagem implements Serializable {
         this.data = null;
     }
 
+    public Mensagem(int oprc){
+        this.oprc = oprc;
+        this.fileId = 0;
+        this.fileName = new String();
+        this.data = null;
+    }
+
     public Mensagem(int oprc, int fileId){
         this.oprc = oprc;
         this.fileId = fileId;

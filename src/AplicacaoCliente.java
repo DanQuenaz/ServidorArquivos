@@ -7,7 +7,6 @@ public class AplicacaoCliente {
     private Socket servidor;
     private ObjectOutputStream streamSaida;
     private ObjectInputStream streamEntrada;
-    private ThreadEntrada entrada; 
     private String nick;
 
     public AplicacaoCliente(String ip, int porta, String nick) throws UnknownHostException, IOException {
@@ -15,8 +14,6 @@ public class AplicacaoCliente {
         servidor = new Socket(ip, porta);
         streamSaida = new ObjectOutputStream(servidor.getOutputStream());
         streamEntrada = new ObjectInputStream(servidor.getInputStream());
-        /* entrada = new ThreadEntrada(streamEntrada);
-        entrada.start(); */
     }
 
     // public void enviaMensagem(Mensagem msg) throws IOException {
@@ -72,8 +69,29 @@ public class AplicacaoCliente {
             // log(ex);
         }
     }
+
+    public static void listFilesForFolder(final File folder) {
+        for (final File fileEntry : folder.listFiles()) {
+            if (fileEntry.isDirectory()) {
+                listFilesForFolder(fileEntry);
+            } else {
+                if(fileEntry.length() < 1000 ){
+                    System.out.println(fileEntry.getName() + " ------------ " + fileEntry.length()+"B");
+                }
+                else{
+                    System.out.println(fileEntry.getName() + " ------------ " + fileEntry.length()/1000+"KB");
+                }
+            }
+        }
+        
+    }
+
+    public void clearScreen() {  
+        System.out.print("\033[H\033[2J");  
+        System.out.flush();  
+    }  
     
-    public static void main(String[] args) throws UnknownHostException, IOException {
+    public static void main(String[] args) throws UnknownHostException, IOException, InterruptedException {
         Mensagem msg;
         String nick = "";
         boolean fim = false;
@@ -94,9 +112,11 @@ public class AplicacaoCliente {
         System.out.println(nick + " se conectou ao servidor!");
         
         do {
-            System.out.println("1 - Listar arquivos disponíveis\n2 - Listar arquivos locais\nFIM - Finalizar");
+            cliente.clearScreen();
+            System.out.println("1 - Listar arquivos disponíveis\n2 - Listar arquivos locais\n3 - Listar clientes conectados\n0 - Finalizar");
             op = teclado.nextInt();
             if(op == 1){
+                cliente.clearScreen();
                 int k = 1;
                 idFiles = new HashMap<Integer, String>();
                 msg = new Mensagem(1, 0);
@@ -123,6 +143,26 @@ public class AplicacaoCliente {
                 }
 
             }else if(op == 2){
+                cliente.clearScreen();
+                System.out.println("ARQUIVOS BAIXADOS\n");
+                final File folder = new File("../received/");
+                AplicacaoCliente.listFilesForFolder(folder);
+                System.out.print("\n\nPressione enter para voltar:"); teclado0.readLine();
+            }else if(op == 3){
+                cliente.clearScreen();
+                System.out.println("CLIENTES CONECTADOS\n");
+                msg = new Mensagem(3);
+                cliente.enviaMensagem(msg);
+                msg = (Mensagem)cliente.recebeMensagem();
+
+                Vector<String> clientes = (Vector<String>)msg.getData();
+
+                for(String index : clientes){
+                    System.out.println(index);
+                }
+
+                System.out.print("\n\nPressione enter para voltar:"); teclado0.readLine();
+                
             }else if (op == 0){
                 fim = true;    
             }else{}             

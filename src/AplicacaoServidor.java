@@ -111,8 +111,14 @@ public class AplicacaoServidor extends Thread{
         this.clientes.get(ip).saida().writeObject(aux);
     }
 
-    public void enviaClientes(String ip){
+    public void enviaClientes( String ip ) throws IOException{
+        Vector<String> aux = new Vector<String>();
+        for(String index : this.clientes.keySet()){
+            aux.add(index);
+        }
 
+        Mensagem data = new Mensagem(0, 0, aux);
+        this.clientes.get(ip).saida().writeObject(data);
     }
     
     public int getPorta() {
@@ -194,16 +200,20 @@ class Cliente extends Thread {
             while (!fim) { 
                 msg = ( Mensagem ) streamEntrada.readObject();
                 if(msg.getOprc() == 1 ){
-                    final File folder = new File("../files/");
+                    final File folder = new File("../serverFiles/");
                     AplicacaoServidor.listFilesForFolder(folder, server.getFiles());
                     System.out.println("Preparando...");
                     server.enviaNomes(this.sock.getInetAddress().getHostAddress());
                     System.out.println("Mensagem enviada para: "+ this.sock.getInetAddress().getHostAddress());
-                } else if(msg.getOprc() == 2 ){
+                }else if(msg.getOprc() == 2 ){
                     System.out.println("Preparando...");
                     server.enviaArquivo(this.files.get( msg.getName() ), this.sock.getInetAddress().getHostAddress());
                     System.out.println("Mensagem enviada para: "+ this.sock.getInetAddress().getHostAddress());
-                }   
+                }else if(msg.getOprc() == 3){
+                    System.out.println("Preparando...");
+                    server.enviaClientes(this.sock.getInetAddress().getHostAddress());
+                    System.out.println("Mensagem enviada para: "+ this.sock.getInetAddress().getHostAddress());
+                }  
                 
             } 
             streamEntrada.close();
