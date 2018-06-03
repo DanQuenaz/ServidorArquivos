@@ -1,51 +1,62 @@
 import java.io.*;
 
 public class Mensagem implements Serializable {
-    private String msg;
-    private String remetente;
-    private String destinatario;
+    private int oprc;
+    private int fileId;
+    private String fileName;
+    private Object data;
     
     public Mensagem() {
-        this.msg = "";
-        this.remetente = "";
-        this.destinatario = "";
-    }
-    
-    public Mensagem(String msg, String remetente) {
-        this.msg = msg;
-        this.remetente = remetente;
-        this.destinatario = "";
+        this.oprc = 0;
+        this.fileId = 0;
+        this.fileName = new String();
+        this.data = null;
     }
 
-    public Mensagem(String msg, String remetente, String destinatario) {
-        this.msg = msg;
-        this.remetente = remetente;
-        this.destinatario = destinatario;
+    public Mensagem(int oprc, int fileId){
+        this.oprc = oprc;
+        this.fileId = fileId;
+        this.fileName = new String();
+        this.data = null;
+    }
+
+    public Mensagem(int oprc, String fileName){
+        this.oprc = oprc;
+        this.fileId = 0;
+        this.fileName = fileName;
+        this.data = null;
+    }
+
+    public Mensagem(int oprc, int fileId, Object data){
+        this.oprc = oprc;
+        this.fileId = fileId;
+        this.fileName = new String();
+        this.data = data;
+    }
+
+    public Mensagem(int oprc, int fileId, String fileName, Object data){
+        this.oprc = oprc;
+        this.fileId = fileId;
+        this.fileName = fileName;
+        this.data = data;
+    }
+
+    public int getOprc(){
+        return this.oprc;
+    }
+
+    public int getFileId(){
+        return this.fileId;
+    }
+
+    public Object getData(){
+        return this.data;
+    }
+
+    public String getName(){
+        return this.fileName;
     }
     
-    public String getMensagem() {
-        return msg;
-    }
-    
-    public void setMensagem(String msg) {
-        this.msg = msg;
-    }
-    
-    public String getRemetente() {
-        return remetente;
-    }
-    
-    public void setRemetente(String remetente) {
-        this.remetente = remetente;
-    }
-    
-    public String getDestinatario() {
-        return destinatario;
-    }
-    
-    public void setDestinatario(String destinatario) {
-        this.destinatario = destinatario;
-    }
     
 
 }

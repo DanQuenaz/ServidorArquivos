@@ -12,22 +12,22 @@ public class AplicacaoServidor extends Thread{
     private Map<String, Cliente> clientes;
     private Map<String, Socket> socks;
 
-    private Vector<File> files;
+    private Map<String, File> files;
 
     public AplicacaoServidor(int porta) throws IOException {
         this.porta = porta;
         servidor = new ServerSocket(porta); 
         this.socks = new HashMap<String, Socket>();
         this.clientes = new HashMap<String, Cliente>();
-        this.files = new Vector<File>();
+        this.files = new HashMap<String, File>();
     }
 
-    public Vector<File> getFiles(){
+    public Map<String, File> getFiles(){
         return this.files;
     }
 
-    public File getFile(int id){
-        return this.files.get(id);
+    public File getFile(String name){
+        return this.files.get(name);
     }
 
     public void esperaConexoes() throws IOException {
@@ -71,25 +71,60 @@ public class AplicacaoServidor extends Thread{
     }
 
     public void enviaArquivo(File file, String ip) throws IOException{
-        this.clientes.get(ip).saida().writeObject(file);
+        byte[] result = new byte[(int)file.length()];
+        try {
+            InputStream input = null;
+            try {
+                int totalBytesRead = 0;
+                input = new BufferedInputStream(new FileInputStream(file));
+                while(totalBytesRead < result.length){
+                    int bytesRemaining = result.length - totalBytesRead;
+                    //input.read() returns -1, 0, or more :
+                    int bytesRead = input.read(result, totalBytesRead, bytesRemaining); 
+                    if (bytesRead > 0){
+                        totalBytesRead = totalBytesRead + bytesRead;
+                    }
+                }
+                // log("Num bytes read: " + totalBytesRead);
+            }
+            finally {
+                // log("Closing input stream.");
+                input.close();
+            }
+        }
+        catch (FileNotFoundException ex) {
+            // log("File not found.");
+        }
+        catch (IOException ex) {
+            // log(ex);
+        }
+        Mensagem aux = new Mensagem(0, 0, file.getName(), result );
+        this.clientes.get(ip).saida().writeObject(aux);
     }
 
-    public void enviaNomes(File file, String ip) throws IOException{
-        Vector<String> nomes = new Vector<String>;
-        this.clientes.get(ip).saida().writeObject(file);
+    public void enviaNomes( String ip ) throws IOException{
+        Map<String, Integer> nomes = new HashMap<String, Integer>();
+        for(String index : this.files.keySet()){
+            nomes.put(index, (int)this.files.get(index).length());
+        }
+        Mensagem aux = new Mensagem(0, 0, nomes );
+        this.clientes.get(ip).saida().writeObject(aux);
+    }
+
+    public void enviaClientes(String ip){
+
     }
     
     public int getPorta() {
         return porta;
     }
 
-    public static void listFilesForFolder(final File folder, Vector<File> files) {
+    public static void listFilesForFolder(final File folder, Map<String, File> files) {
         for (final File fileEntry : folder.listFiles()) {
             if (fileEntry.isDirectory()) {
                 listFilesForFolder(fileEntry, files);
             } else {
-                files.add(fileEntry);
-                System.out.println(fileEntry.getName());
+                files.put(fileEntry.getName(), fileEntry);
             }
         }
     }
@@ -97,9 +132,6 @@ public class AplicacaoServidor extends Thread{
     public static void main(String[] args) throws IOException {
         boolean fim = false;
         AplicacaoServidor server = new AplicacaoServidor(12345);
-
-        final File folder = new File("../files/");
-        AplicacaoServidor.listFilesForFolder(folder, server.getFiles());
 
         System.out.println("Porta 12345 aberta!");
         
@@ -129,15 +161,13 @@ class Cliente extends Thread {
     private AplicacaoServidor server;
     private ObjectInputStream streamEntrada;
     private ObjectOutputStream streamSaida;
-    private Vector<File> files;
-    private int prot[];
+    private Map<String, File> files;
 
     
-    public Cliente(Socket sock, AplicacaoServidor server, Vector<File> files) throws IOException  {
+    public Cliente(Socket sock, AplicacaoServidor server, Map<String, File> files) throws IOException  {
         this.sock = sock;
         this.server = server;
         this.files = files;
-        this.prot = new int[2];
         fim = false;
         streamSaida = new ObjectOutputStream(sock.getOutputStream());
         streamEntrada = new ObjectInputStream(sock.getInputStream());
@@ -162,14 +192,17 @@ class Cliente extends Thread {
         try {
             Mensagem msg;
             while (!fim) { 
-            
-                this.prot = (int[]) streamEntrada.readObject();
-                if(prot[0] == 1){
-                    
-                }else if(prot[0] == 2){
+                msg = ( Mensagem ) streamEntrada.readObject();
+                if(msg.getOprc() == 1 ){
+                    final File folder = new File("../files/");
+                    AplicacaoServidor.listFilesForFolder(folder, server.getFiles());
                     System.out.println("Preparando...");
-                    server.enviaArquivo(this.files.get(prot[1]), this.sock.getInetAddress().getHostAddress());
-                    System.out.println("Mensagem enviada para alguem!");
+                    server.enviaNomes(this.sock.getInetAddress().getHostAddress());
+                    System.out.println("Mensagem enviada para: "+ this.sock.getInetAddress().getHostAddress());
+                } else if(msg.getOprc() == 2 ){
+                    System.out.println("Preparando...");
+                    server.enviaArquivo(this.files.get( msg.getName() ), this.sock.getInetAddress().getHostAddress());
+                    System.out.println("Mensagem enviada para: "+ this.sock.getInetAddress().getHostAddress());
                 }   
                 
             } 
@@ -180,4 +213,3 @@ class Cliente extends Thread {
         }
     }
 }
-
