@@ -119,7 +119,18 @@ public class AplicacaoServidor extends Thread{
         boolean fim = false;
         AplicacaoServidor server = new AplicacaoServidor(12975);
 
-        System.out.println("Porta 12345 aberta!");
+        Enumeration e = NetworkInterface.getNetworkInterfaces();
+        while(e.hasMoreElements()){
+            NetworkInterface n = (NetworkInterface) e.nextElement();
+            Enumeration ee = n.getInetAddresses();
+            while (ee.hasMoreElements()){
+                InetAddress i = (InetAddress) ee.nextElement();
+                String serverIP = i.getHostAddress();
+                if(!serverIP.contains(":") && !serverIP.contains("127.0.0.1")){
+                    System.out.println("Servidor iniciado com sucesso!\nEndereço: "+ serverIP+"\nPorta: 12975");
+                }
+            }
+        }
         
         System.out.println("Clientes conectando...");    
         server.start();
