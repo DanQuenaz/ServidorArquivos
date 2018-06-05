@@ -40,6 +40,10 @@ public class AplicacaoServidor extends Thread{
                 this.socks.put(auxS.getInetAddress().getHostAddress(), auxS);
                 this.clientes.put(auxS.getInetAddress().getHostAddress(), new Cliente(auxS, this, this.files));
                 this.clientes.get(auxS.getInetAddress().getHostAddress()).start();
+
+                Mensagem aux = new Mensagem(0,0,auxS.getInetAddress().getHostAddress());
+                this.clientes.get(auxS.getInetAddress().getHostAddress()).saida().writeObject(aux);
+                
             }catch(Exception e){}
         }
     }
@@ -76,33 +80,7 @@ public class AplicacaoServidor extends Thread{
     }
 
     public void enviaArquivo(File file, String ip) throws IOException{
-        byte[] result = new byte[(int)file.length()];
-        try {
-            InputStream input = null;
-            try {
-                int totalBytesRead = 0;
-                input = new BufferedInputStream(new FileInputStream(file));
-                while(totalBytesRead < result.length){
-                    int bytesRemaining = result.length - totalBytesRead;
-                    //input.read() returns -1, 0, or more :
-                    int bytesRead = input.read(result, totalBytesRead, bytesRemaining); 
-                    if (bytesRead > 0){
-                        totalBytesRead = totalBytesRead + bytesRead;
-                    }
-                }
-                // log("Num bytes read: " + totalBytesRead);
-            }
-            finally {
-                // log("Closing input stream.");
-                input.close();
-            }
-        }
-        catch (FileNotFoundException ex) {
-            // log("File not found.");
-        }
-        catch (IOException ex) {
-            // log(ex);
-        }
+        byte[] result = Util.capturaArquivo(file);
         Mensagem aux = new Mensagem(0, 0, file.getName(), result );
         this.clientes.get(ip).saida().writeObject(aux);
     }
@@ -130,15 +108,7 @@ public class AplicacaoServidor extends Thread{
         return porta;
     }
 
-    public static void listFilesForFolder(final File folder, Map<String, File> files) {
-        for (final File fileEntry : folder.listFiles()) {
-            if (fileEntry.isDirectory()) {
-                listFilesForFolder(fileEntry, files);
-            } else {
-                files.put(fileEntry.getName(), fileEntry);
-            }
-        }
-    }
+    
 
     public static void main(String[] args) throws IOException {
         File serverFolder = new File("../serverFiles/");
@@ -212,7 +182,7 @@ class Cliente extends Thread {
                 msg = ( Mensagem ) streamEntrada.readObject();
                 if(msg.getOprc() == 1 ){
                     final File folder = new File("../serverFiles/");
-                    AplicacaoServidor.listFilesForFolder(folder, server.getFiles());
+                    Util.listaArquivos(folder, server.getFiles());
                     System.out.println("Preparando...");
                     server.enviaNomes(this.sock.getInetAddress().getHostAddress());
                     System.out.println("Mensagem enviada para: "+ this.sock.getInetAddress().getHostAddress());
